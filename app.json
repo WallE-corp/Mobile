@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "wall-e",
+    "slug": "wall-e",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "wall-e"
+}
