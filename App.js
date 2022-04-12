@@ -1,12 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import {React, useState} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import Modal from "react-native-modal";
 
 import direction from "../wall-e/assets/right-arrow.png";
 import directionLight from "../wall-e/assets/right-arrow-light.png";
 import wallE from "../wall-e/assets/title.png";
 
 export default function App() {
+
+  const [isModalVisible, setIsModalVisible] = useState(true);
+  const handleModal = () => setIsModalVisible(() => !isModalVisible);
+
   const[alternateImage, setAlternateImage] = useState(true);
 
   const changeImage = () => {
@@ -20,9 +25,18 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Image source={wallE} style={{ width: 200, height: 50 }}></Image>
-        <View  style={styles.SquareShapeView}>
+      <View style={styles.SquareShapeView}>
 
+      </View>
+      <Modal isVisible={isModalVisible} style = {{}}>
+        <View style={styles.container}>
+        <Text style={styles.Writing}>You have to first map the area by </Text>
+        <Text style={styles.Writing}>pressing the button</Text>
+          <TouchableOpacity title="Hide modal" onPress={handleModal} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
+           <Text style={styles.ButtonWriting}>Start mapping</Text>
+          </TouchableOpacity>
         </View>
+      </Modal>
         <TouchableOpacity
             onPress={changeImage}
             style={styles.ButtonGros}
@@ -94,6 +108,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 25,
     top: '10%',
+    textAlign: "center",
+
+    fontWeight: '400',
+    fontSize: 18,
+    lineHeight: 21,
+
+    color: '#000000',
+  },
+  Writing: {
+    width: '80%',
+    height: 25,
     textAlign: "center",
 
     fontWeight: '400',
