@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import {React, useState, SetState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, DeviceEventEmitter, Modal} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, DeviceEventEmitter} from 'react-native';
+import Modal from "react-native-modal";
 
 import io from "socket.io-client";
 
