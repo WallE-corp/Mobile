@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import {React, useState} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import {React, useState, SetState, useEffect} from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, DeviceEventEmitter} from 'react-native';
 import Modal from "react-native-modal";
+
+import io from "socket.io-client";
 
 import direction from "../wall-e/assets/right-arrow.png";
 import directionLight from "../wall-e/assets/right-arrow-light.png";
@@ -14,6 +16,8 @@ export default function App() {
 
   const[alternateImage, setAlternateImage] = useState(true);
 
+  const [arrivalMessage, setArrivalMessage] = useState(null);
+
   const changeImage = () => {
     setAlternateImage(alternateImage => !alternateImage);
   }
@@ -21,6 +25,47 @@ export default function App() {
   const click = () => {
     console.log("weshhh");
   }
+
+  socket = io("http://212.25.136.164:8080");
+
+  const combined = () => {
+    //handleModal
+    console.log("ici");
+    socket.emit('message', JSON.stringify(
+      { type:4, data:
+        {'movement' : 'left', 'action' : 'start'}
+      }
+    )
+  )
+  socket.on('message', function (data) {
+    console.log(data)
+  })
+}
+
+  socket.connect();
+
+  useEffect(() => {
+    const callback = data => {
+        console.log('received: ',data);
+        setArrivalMessage({
+            data
+        })
+    }
+
+    socket.on('message', callback);
+    console.log('arrival msg: ',arrivalMessage);
+
+    // ADD THIS
+    return () => {
+      socket.off(event, callback)
+    }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrivalMessage, socket]);
+ 
+  socket.on('message', function (data) {
+    console.log(data)
+  })
 
   return (
     <View style={styles.container}>
@@ -32,7 +77,7 @@ export default function App() {
         <View style={styles.container}>
         <Text style={styles.Writing}>You have to first map the area by </Text>
         <Text style={styles.Writing}>pressing the button</Text>
-          <TouchableOpacity title="Hide modal" onPress={handleModal} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
+          <TouchableOpacity title="Hide modal" onPress={combined} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
            <Text style={styles.ButtonWriting}>Start mapping</Text>
           </TouchableOpacity>
         </View>
