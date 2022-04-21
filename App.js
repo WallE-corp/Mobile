@@ -21,7 +21,7 @@ export default function App() {
   /* Move entire socket logic to a separate file */
   // ==========================================================
   // Only set socket once then reuse the same instance
-  const socketRef = useRef(io("http://localhost:8080"));
+  const socketRef = useRef(io("http://localhost:3000"));
   const socket = socketRef.current;
 
   // This runs once when component mounts
@@ -30,6 +30,17 @@ export default function App() {
     socket.on('message', (data) => {
       console.log('received: ',data);
       setArrivalMessage(data);
+    });
+
+    socket.on('connect', () => {
+        // Register as remote controller of walle
+        const data = {
+            type: 6,
+            data: {
+                role: "remote",
+            },
+        };
+        socket.emit('message', JSON.stringify(data));
     });
 
     // Connect 
