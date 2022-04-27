@@ -1,11 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import {React, useState} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import {React, useState, SetState, useEffect, useRef} from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, DeviceEventEmitter} from 'react-native';
 import Modal from "react-native-modal";
 
-import direction from "../wall-e/assets/right-arrow.png";
-import directionLight from "../wall-e/assets/right-arrow-light.png";
-import wallE from "../wall-e/assets/title.png";
+import io from "socket.io-client";
+
+import direction from "./assets/right-arrow.png";
+import directionLight from "./assets/right-arrow-light.png";
+import wallE from "./assets/title.png";
 
 export default function App() {
 
@@ -13,6 +15,52 @@ export default function App() {
   const handleModal = () => setIsModalVisible(() => !isModalVisible);
 
   const[alternateImage, setAlternateImage] = useState(true);
+
+  const [arrivalMessage, setArrivalMessage] = useState(null);
+
+  /* Move entire socket logic to a separate file */
+  // ==========================================================
+  // Only set socket once then reuse the same instance
+  const socketRef = useRef(io("http://localhost:3000"));
+  const socket = socketRef.current;
+
+  // This runs once when component mounts
+  useEffect(() => {
+    // Attach event listener to socket 
+    socket.on('message', (data) => {
+      console.log('received: ',data);
+      setArrivalMessage(data);
+    });
+
+    socket.on('connect', () => {
+        // Register as remote controller of walle
+        const data = {
+            type: 6,
+            data: {
+                role: "remote",
+            },
+        };
+        socket.emit('message', JSON.stringify(data));
+    });
+
+    // Connect 
+    socket.connect();
+
+    // When component unmounts
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const startMappingPressed = () => {
+    const data = {
+      type: 5, // Type 5 = start calibration
+      data: {
+        "mapId": "ASDydASd7AGb9sD", // not needed, just test data
+      }
+    }
+    socket.emit('message', JSON.stringify(data));
+  }
 
   const changeImage = () => {
     setAlternateImage(alternateImage => !alternateImage);
@@ -30,9 +78,9 @@ export default function App() {
       </View>
       <Modal isVisible={isModalVisible} style = {{}}>
         <View style={styles.container}>
-        <Text style={styles.Writing}>You have to first map the area by </Text>
+        <Text style={styles.Writing}>You have to first map the area by {arrivalMessage}</Text>
         <Text style={styles.Writing}>pressing the button</Text>
-          <TouchableOpacity title="Hide modal" onPress={handleModal} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
+          <TouchableOpacity title="Hide modal" onPress={startMappingPressed} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
            <Text style={styles.ButtonWriting}>Start mapping</Text>
           </TouchableOpacity>
         </View>
