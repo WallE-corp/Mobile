@@ -1,119 +1,138 @@
 import { StatusBar } from 'expo-status-bar';
-import {React, useState, SetState, useEffect, useRef} from 'react';
+import {React, useState, SetState, useEffect, Component} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, DeviceEventEmitter} from 'react-native';
+import Svg, {Line} from 'react-native-svg';
 import Modal from "react-native-modal";
 
 import io from "socket.io-client";
 
-import direction from "./assets/right-arrow.png";
-import directionLight from "./assets/right-arrow-light.png";
-import wallE from "./assets/title.png";
+import direction from "../wall-e/assets/right-arrow.png";
+import directionLight from "../wall-e/assets/right-arrow-light.png";
+import wallE from "../wall-e/assets/title.png";
+import { PixelRatio } from 'react-native-web';
+import jsonTest from "../wall-e/test.json"
 
-export default function App() {
+export default class App extends Component {
 
-  const [isModalVisible, setIsModalVisible] = useState(true);
-  const handleModal = () => setIsModalVisible(() => !isModalVisible);
+  state = {
+    isModalVisible: true,
+    alternateImage: true,
+    mappy : [],
+ }
+  handleModal = () => setIsModalVisible(() => !this.isModalVisible);
 
-  const[alternateImage, setAlternateImage] = useState(true);
+  changeImage = () => {
+    console.log("ici")
+    changeState = !this.alternateImage;
+    this.setState({alternateImage: changeState});
+  };
 
-  const [arrivalMessage, setArrivalMessage] = useState(null);
-
-  /* Move entire socket logic to a separate file */
-  // ==========================================================
-  // Only set socket once then reuse the same instance
-  const socketRef = useRef(io("http://localhost:3000"));
-  const socket = socketRef.current;
-
-  // This runs once when component mounts
-  useEffect(() => {
-    // Attach event listener to socket 
-    socket.on('message', (data) => {
-      console.log('received: ',data);
-      setArrivalMessage(data);
-    });
-
-    socket.on('connect', () => {
-        // Register as remote controller of walle
-        const data = {
-            type: 6,
-            data: {
-                role: "remote",
-            },
-        };
-        socket.emit('message', JSON.stringify(data));
-    });
-
-    // Connect 
-    socket.connect();
-
-    // When component unmounts
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  const startMappingPressed = () => {
-    const data = {
-      type: 5, // Type 5 = start calibration
-      data: {
-        "mapId": "ASDydASd7AGb9sD", // not needed, just test data
-      }
-    }
-    socket.emit('message', JSON.stringify(data));
-  }
-
-  const changeImage = () => {
-    setAlternateImage(alternateImage => !alternateImage);
-  }
-
-  const click = () => {
+  click = () => {
     console.log("weshhh");
+  };
+
+
+  createMap = () => {
+    tempLowX = 0;
+    tempHightX = 0;
+    tempLowY = 0;
+    tempHightY = 0;
+    sizeMaxX = 0;
+    sizeMaxY = 0;
+    makePosX = 0;
+    makePosY = 0;
+    size1pX = 0;
+    size1pY = 0;
+  
+    console.log(jsonTest);
+    jsonTest.mapCoor.map(mapCoor => {
+        if (mapCoor.x > tempHightX)
+          tempHightX = mapCoor.x
+        if (mapCoor.x < tempLowX)
+          tempLowX = mapCoor.x
+        if (mapCoor.y > tempHightY)
+          tempHightY = mapCoor.y
+        if (mapCoor.y < tempLowY)
+          tempLowY = mapCoor.y
+    })
+    if (tempLowX < 0)
+      makePosX = tempLowX
+    if (tempLowY < 0)
+      makePosY = tempLowY
+    sizeMaxX = (tempHightX + makePosX) - (tempLowX + makePosX)
+    sizeMaxY = (tempHightY + makePosY) - (tempLowY + makePosY)
+    size1pX = sizeMaxX / 300;
+    size1pY = sizeMaxY / 400;
+  
+    jsonTest.mapCoor.map(mapCoor => {
+      this.state.x2 = mapCoor.x / size1pX;
+      this.state.y2 = mapCoor.y / size1pY;
+      this.state.mappy.push(<Line x1={this.state.x1} y1={this.state.y1.toString()} x2={this.state.x2.toString()} y2={this.state.y2.toString()} stroke="red" strokeWidth="2" />);
+      temp = this.state.mappy;
+      this.state.x1 = this.state.x2;
+      this.state.y1 = this.state.y2;
+    })
+    this.setState({mappy: temp});
   }
+
+  combined = () =>  {
+    console.log("la");
+    this.handleModal();
+    this.createMap();
+};
+
+
+render() {
+  console.log("icieeee")
 
   return (
     <View style={styles.container}>
       <Image source={wallE} style={{ width: 200, height: 50 }}></Image>
       <View style={styles.SquareShapeView}>
-
+      <Svg height= "400" width= "300">
+        {console.log(this.state.x2)}
+        {this.state.mappy}
+      </Svg>
       </View>
-      <Modal isVisible={isModalVisible} style = {{}}>
+      <Modal isVisible={this.isModalVisible} style = {{}}>
         <View style={styles.container}>
-        <Text style={styles.Writing}>You have to first map the area by {arrivalMessage}</Text>
+        <Text style={styles.Writing}>You have to first map the area by </Text>
         <Text style={styles.Writing}>pressing the button</Text>
-          <TouchableOpacity title="Hide modal" onPress={startMappingPressed} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
+          <TouchableOpacity title="Hide modal" onPress={this.combined} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
            <Text style={styles.ButtonWriting}>Start mapping</Text>
           </TouchableOpacity>
         </View>
       </Modal>
         <TouchableOpacity
-            onPress={changeImage}
+            onPress={this.changeImage()}
             style={styles.ButtonGros}
           >
-            {alternateImage && <Text style={styles.ButtonWriting}>End control wall-e</Text>}
-            {!alternateImage && <Text style={styles.ButtonWriting}>Take control wall-e</Text>}
+            {this.state.alternateImage && <Text style={styles.ButtonWriting}>End control wall-e</Text>}
+            {!this.state.alternateImage && <Text style={styles.ButtonWriting}>Take control wall-e</Text>}
           
         </TouchableOpacity>
 
-        <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={click}>
-          {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg'}]}}/>}
-          {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg'}]}}/>}
+        <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={this.click()}>
+          {this.state.alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg'}]}}/>}
+          {!this.state.alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg'}]}}/>}
         </TouchableOpacity>
         <View style={{flexDirection: "row"}}>
-          <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={click}>
-            {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: -60, width: 32, height: 32,  transform: [{ rotate: '180deg'}]}}/>}
-            {!alternateImage && <Image source={directionLight} style={{top: '100%',  position: "absolute", left: -60, width: 32, height: 32, transform: [{ rotate: '180deg'}]}}/>}
+          <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={this.click()}>
+            {this.state.alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: -60, width: 32, height: 32,  transform: [{ rotate: '180deg'}]}}/>}
+            {!this.state.alternateImage && <Image source={directionLight} style={{top: '100%',  position: "absolute", left: -60, width: 32, height: 32, transform: [{ rotate: '180deg'}]}}/>}
           </TouchableOpacity>
-          <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={click}>
-            {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: 60, width: 32, height: 32,  transform: [{ rotate: '0deg'}]}}/>}
-            {!alternateImage && <Image source={directionLight} style={{top: '100%',  position: "absolute", left: 60, width: 32, height: 32, transform: [{ rotate: '0deg'}]}}/>}
+          <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={this.click()}>
+            {this.state.alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: 60, width: 32, height: 32,  transform: [{ rotate: '0deg'}]}}/>}
+            {!this.state.alternateImage && <Image source={directionLight} style={{top: '100%',  position: "absolute", left: 60, width: 32, height: 32, transform: [{ rotate: '0deg'}]}}/>}
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={click}>
-          {alternateImage && <Image source={direction} style={{top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg'}]}}/>}
-          {!alternateImage && <Image source={directionLight} style={{top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg'}]}}/>}
+        <TouchableOpacity style={{borderRadius: 100, height: 40, width: 40}} onPress={this.click()}>
+          {this.state.alternateImage && <Image source={direction} style={{top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg'}]}}/>}
+          {!this.state.alternateImage && <Image source={directionLight} style={{top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg'}]}}/>}
         </TouchableOpacity>
     </View>
   );
+}
 }
 
 const styles = StyleSheet.create({
@@ -175,4 +194,5 @@ const styles = StyleSheet.create({
 
     color: '#000000',
   }
+
 });
