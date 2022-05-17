@@ -22,6 +22,7 @@ export default function App() {
   const [rightState, setrightState] = useState(false);
   const [forwardState, setforwardState] = useState(false);
   const [backwardState, setbackwardState] = useState(false);
+  const [autoState, setautoState] = useState(false);
 
   /* Move entire socket logic to a separate file */
   // ==========================================================
@@ -69,15 +70,29 @@ export default function App() {
   }
 
   const remote = () => {
-    const data = {
-      "type": 4,
-      "data": {
-        "movement": "auto",
-        "action": "start"
+    if (autoState == false) {
+      const data = {
+        "type": 4,
+        "data": {
+          "movement": "auto",
+          "action": "start"
+        }
       }
+      console.log("auto start");
+      socket.emit('message', JSON.stringify(data));
+      setautoState(autoState => !autoState);
+    } else {
+      const data = {
+        "type": 4,
+        "data": {
+          "movement": "auto",
+          "action": "stop"
+        }
+      }
+      console.log("auto stop");
+      socket.emit('message', JSON.stringify(data));
+      setrightState(autoState => !autoState);
     }
-    console.log("auto start");
-    socket.emit('message', JSON.stringify(data));
   }
 
   const Right = () => {
