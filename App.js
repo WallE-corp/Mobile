@@ -11,7 +11,7 @@ import wallE from "./assets/title.png";
 
 export default function App() {
 
-  const [isModalVisible, setIsModalVisible] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const handleModal = () => setIsModalVisible(() => !isModalVisible);
 
   const [alternateImage, setAlternateImage] = useState(true);
@@ -70,11 +70,13 @@ export default function App() {
 
   const remote = () => {
     const data = {
-      "type": 6,
+      "type": 4,
       "data": {
-        "role": "remote"
+        "movement": "auto",
+        "action": "start"
       }
     }
+    console.log("auto start");
     socket.emit('message', JSON.stringify(data));
   }
 
@@ -87,6 +89,7 @@ export default function App() {
           "action": "start"
         }
       }
+      console.log("right start");
       socket.emit('message', JSON.stringify(data));
       setrightState(rightState => !rightState);
     } else {
@@ -97,10 +100,11 @@ export default function App() {
           "action": "stop"
         }
       }
+      console.log("right stop");
       socket.emit('message', JSON.stringify(data));
       setrightState(rightState => !rightState);
     }
-    
+
   }
 
   const Left = () => {
@@ -112,6 +116,7 @@ export default function App() {
           "action": "start"
         }
       }
+      console.log("left start");
       socket.emit('message', JSON.stringify(data));
       setleftState(leftState => !leftState);
     } else {
@@ -122,13 +127,14 @@ export default function App() {
           "action": "stop"
         }
       }
+      console.log("left stop");
       socket.emit('message', JSON.stringify(data));
       setleftState(leftState => !leftState);
     }
   }
 
   const Forward = () => {
-
+    ;
     if (forwardState == false) {
       const data = {
         "type": 4,
@@ -137,8 +143,8 @@ export default function App() {
           "action": "start"
         }
       }
+      console.log("forward start");
       socket.emit('message', JSON.stringify(data));
-      setforwardState(forwardState => !forwardState);
     } else {
       const data = {
         "type": 4,
@@ -147,14 +153,16 @@ export default function App() {
           "action": "stop"
         }
       }
+      console.log("forward stop");
       socket.emit('message', JSON.stringify(data));
-      setforwardState(forwardState => !forwardState);
+
     }
+    setforwardState(forwardState => !forwardState);
   }
 
   const Backward = () => {
 
-   if (backwardState == false) {
+    if (backwardState == false) {
       const data = {
         "type": 4,
         "data": {
@@ -162,6 +170,7 @@ export default function App() {
           "action": "start"
         }
       }
+      console.log("backward start");
       socket.emit('message', JSON.stringify(data));
       setbackwardState(backwardState => !backwardState);
     } else {
@@ -172,28 +181,18 @@ export default function App() {
           "action": "stop"
         }
       }
+      console.log("backward stop");
       socket.emit('message', JSON.stringify(data));
       setbackwardState(backwardState => !backwardState);
     }
   }
 
-  const BackwardStop = () => {
-
-    const data = {
-      "type": 4,
-      "data": {
-        "movement": "backward",
-        "action": "stop"
-      }
-    }
-    socket.emit('message', JSON.stringify(data));
-  }
-
   const changeImage = () => {
     setAlternateImage(alternateImage => !alternateImage);
+    remote();
   }
 
-  const getMap= () => {
+  const getMap = () => {
     console.log("weshhh");
     fetch("http://13.49.136.160:3000/map/", {
       "method": "GET",
@@ -237,7 +236,7 @@ export default function App() {
 
   const click = () => {
     console.log("weshhh");
-    fetch("http://13.49.136.160:3000/map/", {
+    /*fetch("http://13.49.136.160:3000/map/", {
       "method": "GET",
     })
       .then(response => response.json())
@@ -246,7 +245,7 @@ export default function App() {
       })
       .catch(err => {
         console.log(err);
-      });
+      });*/
   }
 
   return (
@@ -273,21 +272,21 @@ export default function App() {
 
       </TouchableOpacity>
 
-      <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={click}>
+      <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={Forward}>
         {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg' }] }} />}
         {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg' }] }} />}
       </TouchableOpacity>
       <View style={{ flexDirection: "row" }}>
-        <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={click}>
+        <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={Left}>
           {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: -60, width: 32, height: 32, transform: [{ rotate: '180deg' }] }} />}
           {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", left: -60, width: 32, height: 32, transform: [{ rotate: '180deg' }] }} />}
         </TouchableOpacity>
-        <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={click}>
+        <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={Right}>
           {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: 60, width: 32, height: 32, transform: [{ rotate: '0deg' }] }} />}
           {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", left: 60, width: 32, height: 32, transform: [{ rotate: '0deg' }] }} />}
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={click}>
+      <TouchableOpacity style={{ borderRadius: 100, height: 40, width: 40 }} onPress={Backward}>
         {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg' }] }} />}
         {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg' }] }} />}
       </TouchableOpacity>
