@@ -15,7 +15,7 @@ import Socket from './Socket';
 
 export default class App extends Component {
   state = {
-    isModalVisible: false,
+    isModalVisible: true,
     alternateImage: true,
     mappy: [],
     arrivalMessage: null,
