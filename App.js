@@ -39,7 +39,7 @@ export default function App() {
 
   // This runs once when component mounts
   useEffect(() => {
-    setInterval(() => { getPathpoints() }, 1000);
+    setInterval(() => { getPathpoints() }, 5000);
     // Attach event listener to socket 
     socket.on('message', (data) => {
       if (autoState == true) {
@@ -216,13 +216,11 @@ export default function App() {
   }
 
   const getPathpoints = () => {
-    console.log("weshhh");
     fetch("http://13.49.136.160:3000/pathpoints/", {
       "method": "GET",
     })
       .then(response => response.json())
       .then(response => {
-        console.log(response);
         let list = [];
         response.map(item => {
           list.push(item.coordinates);
@@ -241,7 +239,10 @@ export default function App() {
   }
 
   const createMap = (arr) => {
-    console.log("ici");
+    let list = [];
+    setMappy(null);
+    console.log(mappy)
+    console.log("rdrtrdtr");
     console.log(arr);
     console.log("ici");
     let tempLowX = 0;
@@ -258,7 +259,7 @@ export default function App() {
     let y1 = 0;
     let x2 = 0;
     let y2 = 0;
-    let temp;
+    let temp = [];
 
     arr.forEach((element, index) => {
       if (element.x > tempHightX)
@@ -286,8 +287,7 @@ export default function App() {
     arr.forEach((element, index) => {
       x2 = ((element.x + makePosX) / size1pX);
       y2 = ((element.y + makePosY) / size1pY);
-      mappy.push(<Line x1={x1} y1={y1.toString()} x2={x2.toString()} y2={y2.toString()} stroke="red" strokeWidth="2" />);
-      temp = mappy;
+      temp.push(<Line x1={x1} y1={y1.toString()} x2={x2.toString()} y2={y2.toString()} stroke="red" strokeWidth="2" />);
       x1 = x2;
       y1 = y2;
     });
