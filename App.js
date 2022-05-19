@@ -40,17 +40,31 @@ export default function App() {
   const socket = socketRef.current;
 
   const [datas, setData] = useState([]);
+  const [datasObj, setDataObj] = useState([]);
 
   // This runs once when component mounts
   useEffect(() => {
-    setInterval(() => { getPathpoints() }, 5000);
+    setInterval(() => {if (autoState == true)  getPathpoints() }, 5000); //if timer is broken remove autoStaet == true
     // Attach event listener to socket 
-    socket.on('message', (data) => {
-      if (autoState == true) {
+    socket.on('message', (data) =>  {
+      if (autoState == true && data.type == 11) {
         console.log('received: ', data);
         let list = datas;
-        list.push(response.json().data);
-        setData(list);
+        list.push(data.data);
+        createMap(datas);
+      } else if (data.type == 9) {
+        console.log('received: ', data);
+        if (datasObj.length == 0) {
+          let list = {};
+          list.push(data.data);
+          setDataObj(list);
+          createMap(datas)
+        } else {
+          let list = datas;
+          list.push(data.data);
+          setDataObj(datas);
+        }
+        
       }
       setArrivalMessage(data);
     });
