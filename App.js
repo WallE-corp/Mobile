@@ -7,6 +7,7 @@ import io from "socket.io-client";
 
 import direction from "./assets/right-arrow.png";
 import directionLight from "./assets/right-arrow-light.png";
+import cross from "./assets/lettre-x.png"
 import wallE from "./assets/title.png";
 
 import jsonTest from "./test.json";
@@ -16,7 +17,7 @@ export default function App() {
 
   const [mappy, setMappy] = useState([]);
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(true);
   const handleModal = () => setIsModalVisible(() => !isModalVisible);
 
   const [alternateImage, setAlternateImage] = useState(true);
@@ -70,6 +71,7 @@ export default function App() {
       clearTimeout(timer);
     };
   }, []);
+
 
   const startMappingPressed = () => {
 
@@ -236,6 +238,10 @@ export default function App() {
   const changeImage = () => {
     setAlternateImage(alternateImage => !alternateImage);
     remote();
+  }
+
+  const drawCross = (arr) => {
+
   }
 
   const createMap = (arr) => {
