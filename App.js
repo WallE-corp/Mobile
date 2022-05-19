@@ -207,20 +207,6 @@ export default function App() {
     remote();
   }
 
-  const getMap = () => {
-    console.log("weshhh");
-    fetch("http://13.49.136.160:3000/map/", {
-      "method": "GET",
-    })
-      .then(response => response.json())
-      .then(response => {
-        console.log(response);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-
   const getPathpoints = () => {
     console.log("weshhh");
     fetch("http://13.49.136.160:3000/pathpoints/", {
@@ -228,41 +214,39 @@ export default function App() {
     })
       .then(response => response.json())
       .then(response => {
-        console.log(response);
+        fs.writeFile('./test.json', JSON.stringify(response), (err) => {
+          if (err) console.log('Error writing file:', err);
+        })
+        return (response);
       })
       .catch(err => {
         console.log(err);
       });
   }
 
-  const getObstacle = () => {
-    console.log("weshhh");
-    fetch("http://13.49.136.160:3000/obstacle/", {
-      "method": "GET",
-    })
-      .then(response => response.json())
-      .then(response => {
-        console.log(response);
-      })
-      .catch(err => {
-        console.log(err);
-      });
+  const writeToJson = () => {
+    return;
   }
 
-  const click = () => {
-    console.log("weshhh");
-    /*fetch("http://13.49.136.160:3000/map/", {
-      "method": "GET",
+  const addToJson = (data) => {
+    const fs = require('fs')
+    fs.readFile('./test.json', 'utf8', (err, jsonString) => {
+      if (err) {
+        return;
+      }
+      try {
+        customer = JSON.parse(jsonString);
+        customer.push(data);
+        fs.writeFile('./test.json', JSON.stringify(updatedJSON), (err) => {
+          if (err) console.log('Error writing file:', err);
+        })
+      } catch (err) {
+        console.log('Error parsing JSON string:', err);
+      }
     })
-      .then(response => response.json())
-      .then(response => {
-        console.log(response);
-      })
-      .catch(err => {
-        console.log(err);
-      });*/
-  }
 
+    return;
+  }
   return (
     <View style={styles.container}>
       <Image source={wallE} style={{ width: 200, height: 50 }}></Image>
