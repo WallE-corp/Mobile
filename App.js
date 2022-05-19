@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import {React, useState, SetState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, DeviceEventEmitter} from 'react-native';
+import { React, useState, SetState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, DeviceEventEmitter } from 'react-native';
 import Modal from "react-native-modal";
 
 import io from "socket.io-client";
@@ -9,8 +9,8 @@ import direction from "./assets/right-arrow.png";
 import directionLight from "./assets/right-arrow-light.png";
 import wallE from "./assets/title.png";
 
-import jsonTest from "../wall-e/test.json";
-import Svg, {Line} from 'react-native-svg';
+import jsonTest from "./test.json";
+import Svg, { Line } from 'react-native-svg';
 
 export default function App() {
 
@@ -19,7 +19,7 @@ export default function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const handleModal = () => setIsModalVisible(() => !isModalVisible);
 
-  const[alternateImage, setAlternateImage] = useState(true);
+  const [alternateImage, setAlternateImage] = useState(true);
 
   const [arrivalMessage, setArrivalMessage] = useState(null);
 
@@ -35,11 +35,14 @@ export default function App() {
   const socketRef = useRef(io("http://13.49.136.160:3000"));
   const socket = socketRef.current;
 
+  const [datas, setData] = useState({});
+
   // This runs once when component mounts
   useEffect(() => {
     // Attach event listener to socket 
     socket.on('message', (data) => {
       console.log('received: ', data);
+      setData(datas => datas.push(data))
       setArrivalMessage(data);
     });
 
@@ -96,7 +99,7 @@ export default function App() {
       }
       console.log("auto stop");
       socket.emit('message', JSON.stringify(data));
-      setrightState(autoState => !autoState);
+      setrightState(true);
     }
   }
 
@@ -207,20 +210,6 @@ export default function App() {
     }
   }
 
-  const getMap = () => {
-    console.log("weshhh");
-    fetch("http://13.49.136.160:3000/map/", {
-      "method": "GET",
-    })
-      .then(response => response.json())
-      .then(response => {
-        console.log(response);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-
   const getPathpoints = () => {
     console.log("weshhh");
     fetch("http://13.49.136.160:3000/pathpoints/", {
@@ -228,32 +217,19 @@ export default function App() {
     })
       .then(response => response.json())
       .then(response => {
-        console.log(response);
+        setData(response);
+        console.log(datas);
       })
       .catch(err => {
         console.log(err);
       });
   }
-
-  const getObstacle = () => {
-    console.log("weshhh");
-    fetch("http://13.49.136.160:3000/obstacle/", {
-      "method": "GET",
-    })
-      .then(response => response.json())
-      .then(response => {
-        console.log(response);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-
 
   const changeImage = () => {
     setAlternateImage(alternateImage => !alternateImage);
     remote();
-    createMap()
+    //getPathpoints();
+    createMap();
   }
 
   const createMap = () => {
@@ -272,18 +248,18 @@ export default function App() {
     let x2 = 0;
     let y2 = 0;
     let temp;
-  
+
     jsonTest.mapCoor.map(mapCoor => {
-        if (mapCoor.x > tempHightX)
-          tempHightX = mapCoor.x
-        if (mapCoor.x < tempLowX) {
-          tempLowX = mapCoor.x
-        }
-        if (mapCoor.y > tempHightY)
-          tempHightY = mapCoor.y
-        if (mapCoor.y < tempLowY) {
-          tempLowY = mapCoor.y
-        }
+      if (mapCoor.x > tempHightX)
+        tempHightX = mapCoor.x
+      if (mapCoor.x < tempLowX) {
+        tempLowX = mapCoor.x
+      }
+      if (mapCoor.y > tempHightY)
+        tempHightY = mapCoor.y
+      if (mapCoor.y < tempLowY) {
+        tempLowY = mapCoor.y
+      }
     })
     if (tempLowX < 0)
       makePosX += (-1) * tempLowX
@@ -294,21 +270,21 @@ export default function App() {
     console.log(tempLowY)
     console.log(makePosX)
     console.log(makePosY)
-    sizeMaxX = (tempHightX ) - (tempLowX)
+    sizeMaxX = (tempHightX) - (tempLowX)
     sizeMaxY = (tempHightY) - (tempLowY)
     size1pX = sizeMaxX / 300;
     size1pY = sizeMaxY / 400;
-  
+
     jsonTest.mapCoor.map(mapCoor => {
       x2 = ((mapCoor.x + makePosX) / size1pX);
-      y2 = ((mapCoor.y +  + makePosY) / size1pY);
+      y2 = ((mapCoor.y + + makePosY) / size1pY);
       mappy.push(<Line x1={x1} y1={y1.toString()} x2={x2.toString()} y2={y2.toString()} stroke="red" strokeWidth="2" />);
       temp = mappy;
       x1 = x2;
       y1 = y2;
     })
     setMappy(temp)
-//    console.log(mappy)
+    //    console.log(mappy)
   }
 
 
@@ -320,46 +296,46 @@ export default function App() {
     <View style={styles.container}>
       <Image source={wallE} style={{ width: 200, height: 50 }}></Image>
       <View style={styles.SquareShapeView}>
-      <Svg height= "400" width= "300">
-        {mappy}
-      </Svg>
+        <Svg height="400" width="300">
+          {mappy}
+        </Svg>
       </View>
-      <Modal isVisible={isModalVisible} style = {{}}>
+      <Modal isVisible={isModalVisible} style={{}}>
         <View style={styles.container}>
-        <Text style={styles.Writing}>You have to first map the area by {arrivalMessage}</Text>
-        <Text style={styles.Writing}>pressing the button</Text>
-          <TouchableOpacity title="Hide modal" onPress={startMappingPressed} style={{position: 'absolute', width: '70%', left:'15%',  height: '5%',  top: '60%',  borderColor: 'white', borderRadius: 20, borderWidth: 2}}>
-           <Text style={styles.ButtonWriting}>Start mapping</Text>
+          <Text style={styles.Writing}>You have to first map the area by {arrivalMessage}</Text>
+          <Text style={styles.Writing}>pressing the button</Text>
+          <TouchableOpacity title="Hide modal" onPress={startMappingPressed} style={{ position: 'absolute', width: '70%', left: '15%', height: '5%', top: '60%', borderColor: 'white', borderRadius: 20, borderWidth: 2 }}>
+            <Text style={styles.ButtonWriting}>Start mapping</Text>
           </TouchableOpacity>
         </View>
       </Modal>
-        <TouchableOpacity
-            onPress={changeImage}
-            style={styles.ButtonGros}
-          >
-            {alternateImage && <Text style={styles.ButtonWriting}>End control wall-e</Text>}
-            {!alternateImage && <Text style={styles.ButtonWriting}>Take control wall-e</Text>}
-          
-        </TouchableOpacity>
+      <TouchableOpacity
+        onPress={changeImage}
+        style={styles.ButtonGros}
+      >
+        {alternateImage && <Text style={styles.ButtonWriting}>End control wall-e</Text>}
+        {!alternateImage && <Text style={styles.ButtonWriting}>Take control wall-e</Text>}
 
-        <TouchableOpacity style={{height: 20, width: 40, marginBottom: 25}} onPress={Forward}>
-          {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg'}]}}/>}
-          {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg'}]}}/>}
+      </TouchableOpacity>
+
+      <TouchableOpacity style={{ height: 20, width: 40, marginBottom: 25 }} onPress={Forward}>
+        {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg' }] }} />}
+        {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '-90deg' }] }} />}
+      </TouchableOpacity>
+      <View style={{ flexDirection: "row", marginBottom: 20 }}>
+        <TouchableOpacity style={{ height: 20, width: 32 }} onPress={Left}>
+          {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: -60, width: 32, height: 20, transform: [{ rotate: '180deg' }] }} />}
+          {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", left: -60, width: 32, height: 20, transform: [{ rotate: '180deg' }] }} />}
         </TouchableOpacity>
-        <View style={{flexDirection: "row", marginBottom: 20}}>
-          <TouchableOpacity style={{height: 20, width: 32}} onPress={Left}>
-            {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: -60, width: 32, height: 20,  transform: [{ rotate: '180deg'}]}}/>}
-            {!alternateImage && <Image source={directionLight} style={{top: '100%',  position: "absolute", left: -60, width: 32, height: 20, transform: [{ rotate: '180deg'}]}}/>}
-          </TouchableOpacity>
-          <TouchableOpacity style={{height: 20, width: 32}} onPress={Right}>
-            {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: 50, width: 32, height: 20,  transform: [{ rotate: '0deg'}]}}/>}
-            {!alternateImage && <Image source={directionLight} style={{top: '100%',  position: "absolute", left: 50, width: 32, height: 20, transform: [{ rotate: '0deg'}]}}/>}
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={{height: 20, width: 40}} onPress={Backward}>
-          {alternateImage && <Image source={direction} style={{top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg'}]}}/>}
-          {!alternateImage && <Image source={directionLight} style={{top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg'}]}}/>}
+        <TouchableOpacity style={{ height: 20, width: 32 }} onPress={Right}>
+          {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", left: 50, width: 32, height: 20, transform: [{ rotate: '0deg' }] }} />}
+          {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", left: 50, width: 32, height: 20, transform: [{ rotate: '0deg' }] }} />}
         </TouchableOpacity>
+      </View>
+      <TouchableOpacity style={{ height: 20, width: 40 }} onPress={Backward}>
+        {alternateImage && <Image source={direction} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg' }] }} />}
+        {!alternateImage && <Image source={directionLight} style={{ top: '100%', position: "absolute", width: 32, height: 32, transform: [{ rotate: '90deg' }] }} />}
+      </TouchableOpacity>
     </View>
   );
 }
@@ -367,24 +343,24 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-   // width: '100%',
+    // width: '100%',
     backgroundColor: '#A9A9A9',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: "column",
   },
-  title : {
+  title: {
 
   },
   SquareShapeView: {
-   // flexShrink: 1,
-   alignContent: 'flex-start',
+    // flexShrink: 1,
+    alignContent: 'flex-start',
     width: '80%',
     height: '60%',
-  //  left: '10%',
+    //  left: '10%',
     marginBottom: '7%',
     backgroundColor: '#DCDCDC',
-    borderColor: '#000000', 
+    borderColor: '#000000',
     borderRadius: 20,
     borderWidth: 2,
   },
