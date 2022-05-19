@@ -7,8 +7,9 @@ import io from "socket.io-client";
 
 import direction from "./assets/right-arrow.png";
 import directionLight from "./assets/right-arrow-light.png";
-import cross from "./assets/lettre-x.png"
+import cross from "./assets/close.png"
 import wallE from "./assets/title.png";
+import arrObstacle from "./test.json"
 
 import jsonTest from "./test.json";
 import Svg, { Line } from 'react-native-svg';
@@ -16,6 +17,8 @@ import Svg, { Line } from 'react-native-svg';
 export default function App() {
 
   const [mappy, setMappy] = useState([]);
+  const [mappyObj, setMappyObj] = useState([]);
+
 
   const [isModalVisible, setIsModalVisible] = useState(true);
   const handleModal = () => setIsModalVisible(() => !isModalVisible);
@@ -74,7 +77,7 @@ export default function App() {
 
 
   const startMappingPressed = () => {
-
+    handleModal()
     const data = {
       type: 5, // Type 5 = start calibration
       data: {
@@ -240,17 +243,8 @@ export default function App() {
     remote();
   }
 
-  const drawCross = (arr) => {
-
-  }
-
   const createMap = (arr) => {
-    let list = [];
-    setMappy(null);
-    console.log(mappy)
-    console.log("rdrtrdtr");
-    console.log(arr);
-    console.log("ici");
+    let arrObstacle =[[3, 5], [7, 8]]
     let tempLowX = 0;
     let tempHightX = 0;
     let tempLowY = 0;
@@ -298,6 +292,12 @@ export default function App() {
       y1 = y2;
     });
 
+    let temp1 = []
+    arrObstacle.forEach((element) => {
+      temp1.push(<Image source={cross} style={{ top: element[0], left: element[1], width: 5, height: 5 }} />)
+    });
+
+    setMappyObj(temp1)
     setMappy(temp)
     //    console.log(mappy)
   }
@@ -311,6 +311,8 @@ export default function App() {
     <View style={styles.container}>
       <Image source={wallE} style={{ width: 200, height: 50 }}></Image>
       <View style={styles.SquareShapeView}>
+        
+      {mappyObj}  
         <Svg height="400" width="300">
           {mappy}
         </Svg>
