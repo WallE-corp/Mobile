@@ -40,31 +40,27 @@ export default function App() {
   const socket = socketRef.current;
 
   const [datas, setData] = useState([]);
-  const [datasObj, setDataObj] = useState([]);
+  const [datasObj, setDataObj] = useState();
 
   // This runs once when component mounts
   useEffect(() => {
-    setInterval(() => {if (autoState == true)  getPathpoints() }, 5000); //if timer is broken remove autoStaet == true
+    setInterval(() => { getPathpoints() }, 5000); //if timer is broken remove autoStaet == true
     // Attach event listener to socket 
+    console.log("ici")
     socket.on('message', (data) =>  {
-      if (autoState == true && data.type == 11) {
-        console.log('received: ', data);
-        let list = datas;
-        list.push(data.data);
-        createMap(datas);
-      } else if (data.type == 9) {
-        console.log('received: ', data);
-        if (datasObj.length == 0) {
-          let list = {};
-          list.push(data.data);
+      const dataJson = JSON.parse(data);
+      if (autoState == true && dataJson.type == 11) {
+        console.log('received: ', dataJson);
+      } else if (dataJson.type == 9) {
+        console.log('received: ', dataJson);
+          console.log("pas 0")
+          let list = [];
+          list.push([dataJson.data.x, dataJson.data.y]);
           setDataObj(list);
-          createMap(datas)
-        } else {
-          let list = datas;
-          list.push(data.data);
-          setDataObj(datas);
-        }
-        
+          console.log("list")
+          console.log(list)
+          console.log(datasObj)
+          createMap(datas, list)  
       }
       setArrivalMessage(data);
     });
@@ -123,7 +119,7 @@ export default function App() {
       }
       console.log("auto stop");
       socket.emit('message', JSON.stringify(data));
-      setrightState(true);
+      setautoState(autoState => !autoState);
     }
   }
 
@@ -245,7 +241,7 @@ export default function App() {
           list.push(item.coordinates);
         })
         setData(list);
-        createMap(list);
+        createMap(list, datasObj);
       })
       .catch(err => {
         console.log(err);
@@ -257,8 +253,8 @@ export default function App() {
     remote();
   }
 
-  const createMap = (arr) => {
-    let arrObstacle =[[3, 5], [7, 8]]
+  const createMap = (arr, arrObstacle) => {
+    //let arrObstacle =[[3, 5], [7, 8]]
     let tempLowX = 0;
     let tempHightX = 0;
     let tempLowY = 0;
@@ -307,9 +303,13 @@ export default function App() {
     });
 
     let temp1 = []
-    arrObstacle.forEach((element) => {
-      temp1.push(<Image source={cross} style={{ top: element[0], left: element[1], width: 5, height: 5 }} />)
-    });
+    if (arrObstacle !== undefined) {
+      console.log("iciiiiiiii")
+      console.log(arrObstacle)
+      arrObstacle.forEach((element) => {
+        temp1.push(<Image source={cross} style={{ top: element[0], left: element[1], width: 5, height: 5 }} />)
+      });
+    } 
 
     setMappyObj(temp1)
     setMappy(temp)
