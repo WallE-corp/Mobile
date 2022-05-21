@@ -12,12 +12,14 @@ import wallE from "./assets/title.png";
 import arrObstacle from "./test.json"
 
 import jsonTest from "./test.json";
-import Svg, { Line } from 'react-native-svg';
+import Svg, { Line, Circle } from 'react-native-svg';
+
+let mappyObj = [];
 
 export default function App() {
 
   const [mappy, setMappy] = useState([]);
-  const [mappyObj, setMappyObj] = useState([]);
+  //const [mappyObj, setMappyObj] = useState([]);
 
 
   const [isModalVisible, setIsModalVisible] = useState(true);
@@ -33,34 +35,23 @@ export default function App() {
   const [backwardState, setbackwardState] = useState(false);
   const [autoState, setautoState] = useState(false);
 
-  /* Move entire socket logic to a separate file */
-  // ==========================================================
-  // Only set socket once then reuse the same instance
   const socketRef = useRef(io("http://13.49.136.160:3000"));
   const socket = socketRef.current;
 
   const [datas, setData] = useState([]);
-  const [datasObj, setDataObj] = useState();
+  const [datasObj, setDataObj] = useState([]);
 
-  // This runs once when component mounts
   useEffect(() => {
-    setInterval(() => { getPathpoints() }, 5000); //if timer is broken remove autoStaet == true
-    // Attach event listener to socket 
-    console.log("ici")
-    socket.on('message', (data) =>  {
+    setInterval(() => { getPathpoints() }, 5000);
+
+    socket.on('message', (data) => {
       const dataJson = JSON.parse(data);
       if (autoState == true && dataJson.type == 11) {
-        console.log('received: ', dataJson);
       } else if (dataJson.type == 9) {
-        console.log('received: ', dataJson);
-          console.log("pas 0")
-          let list = [];
-          list.push([dataJson.data.x, dataJson.data.y]);
-          setDataObj(list);
-          console.log("list")
-          console.log(list)
-          console.log(datasObj)
-          createMap(datas, list)  
+        let list = [];
+        list.push([dataJson.data.x, dataJson.data.y, dataJson.data.label]);
+        mappyObj = list;
+        createMap(datas, list)
       }
       setArrivalMessage(data);
     });
@@ -106,7 +97,6 @@ export default function App() {
           "action": "start"
         }
       }
-      console.log("auto start");
       socket.emit('message', JSON.stringify(data));
       setautoState(autoState => !autoState);
     } else {
@@ -117,7 +107,6 @@ export default function App() {
           "action": "stop"
         }
       }
-      console.log("auto stop");
       socket.emit('message', JSON.stringify(data));
       setautoState(autoState => !autoState);
     }
@@ -132,7 +121,6 @@ export default function App() {
           "action": "start"
         }
       }
-      console.log("right start");
       socket.emit('message', JSON.stringify(data));
       setrightState(rightState => !rightState);
     } else {
@@ -143,7 +131,6 @@ export default function App() {
           "action": "stop"
         }
       }
-      console.log("right stop");
       socket.emit('message', JSON.stringify(data));
       setrightState(rightState => !rightState);
     }
@@ -159,7 +146,6 @@ export default function App() {
           "action": "start"
         }
       }
-      console.log("left start");
       socket.emit('message', JSON.stringify(data));
       setleftState(leftState => !leftState);
     } else {
@@ -170,7 +156,6 @@ export default function App() {
           "action": "stop"
         }
       }
-      console.log("left stop");
       socket.emit('message', JSON.stringify(data));
       setleftState(leftState => !leftState);
     }
@@ -186,7 +171,6 @@ export default function App() {
           "action": "start"
         }
       }
-      console.log("forward start");
       socket.emit('message', JSON.stringify(data));
     } else {
       const data = {
@@ -196,7 +180,6 @@ export default function App() {
           "action": "stop"
         }
       }
-      console.log("forward stop");
       socket.emit('message', JSON.stringify(data));
 
     }
@@ -213,7 +196,6 @@ export default function App() {
           "action": "start"
         }
       }
-      console.log("backward start");
       socket.emit('message', JSON.stringify(data));
       setbackwardState(backwardState => !backwardState);
     } else {
@@ -224,7 +206,6 @@ export default function App() {
           "action": "stop"
         }
       }
-      console.log("backward stop");
       socket.emit('message', JSON.stringify(data));
       setbackwardState(backwardState => !backwardState);
     }
@@ -302,31 +283,24 @@ export default function App() {
       y1 = y2;
     });
 
-    let temp1 = []
-    if (arrObstacle !== undefined) {
-      console.log("iciiiiiiii")
-      console.log(arrObstacle)
-      arrObstacle.forEach((element) => {
-        temp1.push(<Image source={cross} style={{ top: element[0], left: element[1], width: 5, height: 5 }} />)
+    let temp1 = [];
+    if (mappyObj !== undefined) {
+      mappyObj.forEach((element) => {
+        cx = (element[0] + makePosX) / size1pX
+        cy = (element[1] + makePosY) / size1pY
+        temp1.push(<Circle cx={cx.toString()} cy={cy.toString()} r="5" stroke="black" strokeWidth="2" />);
       });
-    } 
+    }
 
-    setMappyObj(temp1)
+    temp.push(temp1)
+   
     setMappy(temp)
-    //    console.log(mappy)
-  }
-
-
-  const click = () => {
-    console.log("weshhh");
   }
 
   return (
     <View style={styles.container}>
       <Image source={wallE} style={{ width: 200, height: 50 }}></Image>
       <View style={styles.SquareShapeView}>
-        
-      {mappyObj}  
         <Svg height="400" width="300">
           {mappy}
         </Svg>
