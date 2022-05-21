@@ -12,12 +12,14 @@ import wallE from "./assets/title.png";
 import arrObstacle from "./test.json"
 
 import jsonTest from "./test.json";
-import Svg, { Line } from 'react-native-svg';
+import Svg, { Line, Circle } from 'react-native-svg';
+
+let mappyObj = [];
 
 export default function App() {
 
   const [mappy, setMappy] = useState([]);
-  const [mappyObj, setMappyObj] = useState([]);
+  //const [mappyObj, setMappyObj] = useState([]);
 
 
   const [isModalVisible, setIsModalVisible] = useState(true);
@@ -40,27 +42,22 @@ export default function App() {
   const socket = socketRef.current;
 
   const [datas, setData] = useState([]);
-  const [datasObj, setDataObj] = useState();
+  const [datasObj, setDataObj] = useState([]);
 
   // This runs once when component mounts
   useEffect(() => {
     setInterval(() => { getPathpoints() }, 5000); //if timer is broken remove autoStaet == true
     // Attach event listener to socket 
-    console.log("ici")
-    socket.on('message', (data) =>  {
+    socket.on('message', (data) => {
       const dataJson = JSON.parse(data);
+    //  console.log('received: ', dataJson);
       if (autoState == true && dataJson.type == 11) {
-        console.log('received: ', dataJson);
       } else if (dataJson.type == 9) {
-        console.log('received: ', dataJson);
-          console.log("pas 0")
-          let list = [];
-          list.push([dataJson.data.x, dataJson.data.y]);
-          setDataObj(list);
-          console.log("list")
-          console.log(list)
-          console.log(datasObj)
-          createMap(datas, list)  
+        let list = [];
+        console.log('ici', dataJson)
+        list.push([dataJson.data.x, dataJson.data.y, dataJson.data.label]);
+        mappyObj = list;
+        createMap(datas, list)
       }
       setArrivalMessage(data);
     });
@@ -302,16 +299,19 @@ export default function App() {
       y1 = y2;
     });
 
-    let temp1 = []
-    if (arrObstacle !== undefined) {
-      console.log("iciiiiiiii")
-      console.log(arrObstacle)
-      arrObstacle.forEach((element) => {
-        temp1.push(<Image source={cross} style={{ top: element[0], left: element[1], width: 5, height: 5 }} />)
+    let temp1 = [];
+    if (mappyObj !== undefined) {
+      mappyObj.forEach((element) => {
+        console.log(element[0])
+        console.log(element[1])
+        cx = (element[0] + makePosX) / size1pX
+        cy = (element[1] + makePosY) / size1pY
+        temp1.push(<Circle cx={cx.toString()} cy={cy.toString()} r="5" stroke="black" strokeWidth="2" />);
       });
-    } 
+    }
 
-    setMappyObj(temp1)
+    temp.push(temp1)
+    console.log(temp1)
     setMappy(temp)
     //    console.log(mappy)
   }
@@ -325,8 +325,6 @@ export default function App() {
     <View style={styles.container}>
       <Image source={wallE} style={{ width: 200, height: 50 }}></Image>
       <View style={styles.SquareShapeView}>
-        
-      {mappyObj}  
         <Svg height="400" width="300">
           {mappy}
         </Svg>
